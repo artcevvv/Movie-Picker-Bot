@@ -64,7 +64,7 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 	return nil
 }
 
-func getMoviesHandler(telegramUsenameOwner string) (string, error) {
+func getMoviesHandler(telegramUsenameOwner string) ([]map[string]string, error) {
 	query := `
 		SELECT movieTitle, movieGenre
 		FROM movies 
@@ -72,41 +72,101 @@ func getMoviesHandler(telegramUsenameOwner string) (string, error) {
 	`
 	rows, err := db.Query(query, telegramUsenameOwner)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch movies: %s", err)
+		return nil, fmt.Errorf("failed to fetch movies: %s", err)
 	}
 
 	defer rows.Close()
 
-	var result string
+	var movies []map[string]string
 
 	for rows.Next() {
 		var movieTitle, movieGenre string
 		err := rows.Scan(&movieTitle, &movieGenre)
 
 		if err != nil {
-			return "", fmt.Errorf("failed to parse movies: %v", err)
+			return nil, fmt.Errorf("failed to parse movies: %v", err)
 		}
 
-		if movieGenre == "" {
-			result += fmt.Sprintf("Title: %s", movieTitle)
-		} else {
-			result += fmt.Sprintf("Title: %s, Genre: %s\n", movieTitle, movieGenre)
+		movie := map[string]string{
+			"title": movieTitle,
+			"genre": movieGenre,
 		}
-
+		movies = append(movies, movie)
 	}
 
-	if result == "" {
-		result = "No movies found!"
+	if len(movies) == 0 {
+		return nil, fmt.Errorf("no movies found")
 	}
 
-	return result, nil
+	return movies, nil
 }
+
+func getMoviesByGenre(telegramUsenameOwner, movieGenre string) ([]map[string]string, error) {
+	query := `
+		SELECT movietitle FROM movies 
+		WHERE telegramUsenameOwner = $1 
+		AND moviegenre = $2;
+	`
+
+	rows, err := db.Query(query, telegramUsenameOwner, movieGenre)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch movies: %v", err)
+	}
+
+	defer rows.Close()
+
+	var moviesByGenre []map[string]string
+	for rows.Next() {
+		var movieTitle string
+		err := rows.Scan(&movieTitle)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse movies: %v", err)
+		}
+
+		movieByGenre := map[string]string{
+			"title": movieTitle,
+		}
+		moviesByGenre = append(moviesByGenre, movieByGenre)
+	}
+
+	if len(moviesByGenre) == 0 {
+		return nil, fmt.Errorf("no movies with this genre was found")
+	}
+
+	return moviesByGenre, err
+}
+
+// func getGenres(telegramUsenameOwner string) ([]map[string]string, error) {
+// 	query := `
+// 		SELECT moviegenre FROM movies
+// 		WHERE telegramUsenameOwner = $1
+// 	`
+
+// 	rows, err := db.Query(query, telegramUsenameOwner)
+
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to fetch genres: %v", err)
+// 	}
+
+// 	defer rows.Close()
+
+// 	var genres []map[string]string
+
+// 	for rows.Next() {
+// 		var movieGenre string
+// 		err := rows.Scan(&movieGenre)
+
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed to parse genres: %v")
+// 		}
+// 	}
+// }
 
 func rmMovie(telegramUsenameOwner, movieTitle string) (string, error) {
 	query := `
 		DELETE FROM movies 
-		WHERE telegramUsernameOwner = $1 
-		AND movieTitle = $2
+		WHERE telegramUsenameOwner ILIKE $1 
+		AND movietitle ILIKE $2
 	`
 	result, err := db.Exec(query, telegramUsenameOwner, movieTitle)
 	if err != nil {
