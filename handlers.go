@@ -12,7 +12,22 @@ import (
 func startCommand(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 
-	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), HelloWord))
+	kb := [][]telego.KeyboardButton{
+		{
+			tu.KeyboardButton("/devtodo"),
+			tu.KeyboardButton("/addmovie"),
+		},
+		{
+			tu.KeyboardButton("/getmovies"),
+			tu.KeyboardButton("/randmovie"),
+		},
+	}
+
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), HelloWord).WithReplyMarkup(&telego.ReplyKeyboardMarkup{
+		Keyboard:        kb,
+		ResizeKeyboard:  true,
+		OneTimeKeyboard: true,
+	}))
 }
 
 func helpCommand(bot *telego.Bot, update telego.Update) {
@@ -24,7 +39,7 @@ func helpCommand(bot *telego.Bot, update telego.Update) {
 func todoCommand(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 
-	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), todoList))
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), todoList).WithParseMode("HTML"))
 }
 
 func stopCommand(bot *telego.Bot, update telego.Update) {
