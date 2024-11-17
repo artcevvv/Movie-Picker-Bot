@@ -9,17 +9,35 @@ import (
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
+// user -> addpartner -> username -> check if partner is user of bot ? bot sends message to partner "yesno" : err;
+
+func anyText(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), unknownCommand))
+}
+
 func startCommand(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 
 	kb := [][]telego.KeyboardButton{
 		{
-			tu.KeyboardButton("/devtodo"),
 			tu.KeyboardButton("/addmovie"),
+			tu.KeyboardButton("/getmovies"),
 		},
 		{
-			tu.KeyboardButton("/getmovies"),
 			tu.KeyboardButton("/randmovie"),
+			tu.KeyboardButton("/randbygenre"),
+		},
+		// {
+		// 	tu.KeyboardButton("/addpartner"),
+		// 	tu.KeyboardButton("/partnerlist"),
+		// },
+		{
+			tu.KeyboardButton("/suggest"),
+		},
+		{
+			tu.KeyboardButton("/devtodo"),
 		},
 	}
 

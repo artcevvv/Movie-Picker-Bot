@@ -53,6 +53,7 @@ func main() {
 	botHandler.HandleCallbackQuery(handlePaginationCQ, th.CallbackDataPrefix("page:"))
 	botHandler.HandleCallbackQuery(cqRandByGenre, th.CallbackDataPrefix("randbygenre:"))
 
+	botHandler.Handle(anyText, th.AnyCommand())
 	botHandler.Handle(handleUserInput)
 
 	botHandler.Start()
