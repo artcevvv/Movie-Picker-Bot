@@ -21,6 +21,12 @@ func helpCommand(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), helpMessage))
 }
 
+func todoCommand(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), todoList))
+}
+
 func stopCommand(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 	delete(userStates, chatID)

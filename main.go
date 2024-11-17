@@ -47,6 +47,7 @@ func main() {
 	botHandler.Handle(deleteMovieList, th.CommandEqual("deletemovie"))
 	botHandler.Handle(randomCommand, th.CommandEqual("randmovie"))
 	botHandler.Handle(getRandMovieByGenreHandler, th.CommandEqual("randbygenre"))
+	botHandler.Handle(todoCommand, th.CommandEqual("devtodo"))
 	botHandler.HandleCallbackQuery(handleDeleteCallback, th.CallbackDataPrefix("delete:"))
 	botHandler.HandleCallbackQuery(handleGenreSelect, th.CallbackDataPrefix("genre:"))
 	botHandler.HandleCallbackQuery(handlePaginationCQ, th.CallbackDataPrefix("page:"))

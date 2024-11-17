@@ -12,7 +12,7 @@ var db *sql.DB
 
 func InitDb() {
 	var err error
-	connectionString := "postgres://MoviePickerUser:7437@localhost/moviepickerbot?sslmode=disable"
+	connectionString := "postgres://moviepickeruser:artcevvv!7437@localhost/moviepickerbot?sslmode=disable"
 	db, err = sql.Open("postgres", connectionString)
 
 	if err != nil {
