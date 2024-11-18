@@ -10,6 +10,8 @@ import (
 
 var db *sql.DB
 
+// all queries in queries.go file
+
 func InitDb() {
 	var err error
 	connectionString := "postgres://moviepickeruser:artcevvv!7437@localhost/moviepickerbot?sslmode=disable"
@@ -26,22 +28,20 @@ func InitDb() {
 
 	fmt.Println("DATABASE CONNECTION IS SUCCESSFUL")
 
-	query := `
-		CREATE TABLE IF NOT EXISTS movies (
-			id SERIAL PRIMARY KEY,
-			telegramUsenameOwner VARCHAR,
-			telegramUserOwnerID BIGINT NOT NULL,
-			movieTitle VARCHAR NOT NULL,
-			movieGenre VARCHAR,
-			telegramUserBoundedID BIGINT);
-	`
-
 	_, err = db.Exec(query)
 	if err != nil {
 		log.Printf("Failed to create movies table: %v", err)
 	}
+	_, err = db.Exec(queryForUsers)
 
-	fmt.Println("TABLE CREATED")
+	fmt.Printf("TABLE MOVIES CREATED\n\n")
+
+	if err != nil {
+		log.Printf("Failed to create users table: %v", err)
+	}
+
+	fmt.Printf("TABLE USERS CREATED\n\n")
+
 }
 
 func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, movieTitle, movieGenre string, telegramUserBoundedID *int64) error {
@@ -49,12 +49,7 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 		return fmt.Errorf("movie title cannot be empty")
 	}
 
-	query := `
-		INSERT INTO movies (telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
-		VALUES ($1, $2, $3, $4, $5)
-	`
-
-	_, err := db.Exec(query, telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
+	_, err := db.Exec(addMovieQuery, telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
 
 	if err != nil {
 		return fmt.Errorf("failed to add movie: %s", err)
@@ -65,12 +60,7 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 }
 
 func getMoviesHandler(telegramUsenameOwner string) ([]map[string]string, error) {
-	query := `
-		SELECT movieTitle, movieGenre
-		FROM movies 
-		WHERE telegramUsenameOwner = $1 
-	`
-	rows, err := db.Query(query, telegramUsenameOwner)
+	rows, err := db.Query(getMoviesQuery, telegramUsenameOwner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch movies: %s", err)
 	}
@@ -102,13 +92,8 @@ func getMoviesHandler(telegramUsenameOwner string) ([]map[string]string, error) 
 }
 
 func getMoviesByGenre(telegramUsenameOwner, movieGenre string) ([]map[string]string, error) {
-	query := `
-		SELECT movietitle FROM movies 
-		WHERE telegramUsenameOwner = $1 
-		AND moviegenre = $2;
-	`
 
-	rows, err := db.Query(query, telegramUsenameOwner, movieGenre)
+	rows, err := db.Query(getByGenreQuery, telegramUsenameOwner, movieGenre)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch movies: %v", err)
 	}
@@ -136,39 +121,8 @@ func getMoviesByGenre(telegramUsenameOwner, movieGenre string) ([]map[string]str
 	return moviesByGenre, err
 }
 
-// func getGenres(telegramUsenameOwner string) ([]map[string]string, error) {
-// 	query := `
-// 		SELECT moviegenre FROM movies
-// 		WHERE telegramUsenameOwner = $1
-// 	`
-
-// 	rows, err := db.Query(query, telegramUsenameOwner)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to fetch genres: %v", err)
-// 	}
-
-// 	defer rows.Close()
-
-// 	var genres []map[string]string
-
-// 	for rows.Next() {
-// 		var movieGenre string
-// 		err := rows.Scan(&movieGenre)
-
-// 		if err != nil {
-// 			return nil, fmt.Errorf("failed to parse genres: %v")
-// 		}
-// 	}
-// }
-
 func rmMovie(telegramUsenameOwner, movieTitle string) (string, error) {
-	query := `
-		DELETE FROM movies 
-		WHERE telegramUsenameOwner ILIKE $1 
-		AND movietitle ILIKE $2
-	`
-	result, err := db.Exec(query, telegramUsenameOwner, movieTitle)
+	result, err := db.Exec(deleteQuery, telegramUsenameOwner, movieTitle)
 	if err != nil {
 		return "", fmt.Errorf("failed to remove movie: %v", err)
 	}

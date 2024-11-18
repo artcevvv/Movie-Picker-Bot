@@ -10,20 +10,23 @@ import (
 
 // map for storing userState and userInputs
 
+// ["qwer", "Qwer", "qwer"]
+// {"Key": "Value"}
+
 var userStates = make(map[int64]string)
 var userInputs = make(map[int64]map[string]string)
 
 // constants for states
 
 const (
-	stateWaitingForTitle = "waiting_for_title"
-	stateWaitingForGenre = "waiting_for_genre"
+	stateWaitingForTitle            = "waiting_for_title"
+	stateWaitingForGenre            = "waiting_for_genre"
+	stateWaitingForBoundUsername    = "waiting_for_bound"
+	stateWaitingForPartnerAgreement = "waiting_for_partner_agreement"
 )
 
 func handleUserInput(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
-	// msgID := update.Message.MessageID
-	// username := update.Message.From.Username
 
 	if state, exists := userStates[chatID]; exists {
 		switch state {
@@ -40,12 +43,17 @@ func handleUserInput(bot *telego.Bot, update telego.Update) {
 	}
 }
 
-func saveUserInput(chatID int64, key, value string) {
-	if userInputs[chatID] == nil {
-		userInputs[chatID] = make(map[string]string)
-	}
-	userInputs[chatID][key] = value
-}
+// func handleUserInputForBound(bot *telego.Bot, update telego.Update) {
+// 	chatID := update.Message.Chat.ID
+
+// 	if state, exists := userStates[chatID]; exists && state == stateWaitingForBoundUsername {
+// 		switch state {
+// 		case stateWaitingForBoundUsername:
+// 			saveUserInput(chatID, "boundUsername", update.Message.Text)
+
+// 		}
+// 	}
+// }
 
 func processMovieInput(username string, chatID int64) error {
 	input := userInputs[chatID]

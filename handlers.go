@@ -42,9 +42,9 @@ func startCommand(bot *telego.Bot, update telego.Update) {
 	}
 
 	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), HelloWord).WithReplyMarkup(&telego.ReplyKeyboardMarkup{
-		Keyboard:        kb,
-		ResizeKeyboard:  true,
-		OneTimeKeyboard: true,
+		Keyboard:       kb,
+		ResizeKeyboard: true,
+		// OneTimeKeyboard: true,
 	}))
 }
 
@@ -86,7 +86,6 @@ func getRandMovieByGenreHandler(bot *telego.Bot, update telego.Update) {
 
 	var rows [][]telego.InlineKeyboardButton
 	for genre, count := range genreCount {
-		// Handle empty genre by setting a default label
 		var genreLabel string
 		if genre == "" {
 			genreLabel = "No genre provided"
@@ -94,7 +93,6 @@ func getRandMovieByGenreHandler(bot *telego.Bot, update telego.Update) {
 			genreLabel = genre
 		}
 
-		// Create button with genre count
 		button := tu.InlineKeyboardButton(fmt.Sprintf("%s (%d)", genreLabel, count)).WithCallbackData(fmt.Sprintf("randbygenre:%s", genre))
 
 		rows = append(rows, []telego.InlineKeyboardButton{button})
