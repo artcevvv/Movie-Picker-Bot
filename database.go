@@ -28,13 +28,18 @@ func InitDb() {
 
 	fmt.Println("DATABASE CONNECTION IS SUCCESSFUL")
 
+	// creates table for movies
+
 	_, err = db.Exec(query)
 	if err != nil {
 		log.Printf("Failed to create movies table: %v", err)
 	}
-	_, err = db.Exec(queryForUsers)
 
 	fmt.Printf("TABLE MOVIES CREATED\n\n")
+
+	// creates users table
+
+	_, err = db.Exec(queryForUsers)
 
 	if err != nil {
 		log.Printf("Failed to create users table: %v", err)
@@ -42,6 +47,37 @@ func InitDb() {
 
 	fmt.Printf("TABLE USERS CREATED\n\n")
 
+	// creates series table
+
+	_, err = db.Exec(queryForSeries)
+
+	if err != nil {
+		log.Printf("Failed to create series table: %v", err)
+	}
+
+	fmt.Printf("TABLE SERIES CREATED\n\n")
+}
+
+func addUser(telegramUserID int64, telegramUsername string) error {
+	var count int
+
+	err := db.QueryRow(isUserExists, telegramUserID).Scan(&count)
+
+	if err != nil {
+		return fmt.Errorf("error checking user existence: %v", err)
+	}
+
+	if count == 0 {
+		_, err := db.Exec(addUserQuery, telegramUserID, telegramUsername)
+
+		if err != nil {
+			return fmt.Errorf("error when adding user: %v", err)
+		}
+
+		fmt.Printf("User added successfully")
+	}
+
+	return nil
 }
 
 func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, movieTitle, movieGenre string, telegramUserBoundedID *int64) error {

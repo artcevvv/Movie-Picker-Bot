@@ -19,6 +19,7 @@ func anyText(bot *telego.Bot, update telego.Update) {
 
 func startCommand(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
+	username := update.Message.From.Username
 
 	kb := [][]telego.KeyboardButton{
 		{
@@ -39,6 +40,13 @@ func startCommand(bot *telego.Bot, update telego.Update) {
 		{
 			tu.KeyboardButton("/devtodo"),
 		},
+	}
+
+	err := addUser(chatID, username)
+
+	if err != nil {
+		fmt.Printf("ERR ADDING USER: %v", err)
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Something went wrong! Check your telegram username"))
 	}
 
 	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), HelloWord).WithReplyMarkup(&telego.ReplyKeyboardMarkup{

@@ -7,20 +7,42 @@ CREATE TABLE IF NOT EXISTS movies (
 	telegramUserOwnerID BIGINT NOT NULL,
 	movieTitle VARCHAR NOT NULL,
 	movieGenre VARCHAR,
-	telegramUserBoundedID BIGINT);
+	telegramUserBoundedID BIGINT,
+	FOREIGN KEY (telegramUserOwnerID) REFERENCES users (telegramUserID) ON DELETE CASCADE);
 `
 
 var queryForUsers = `
 CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,
-	telegramUserID,
+	telegramUserID BIGINT NOT NULL UNIQUE,
 	telegramUsername VARCHAR);
+`
+
+var queryForSeries = `
+	CREATE TABLE IF NOT EXISTS series (
+		id SERIAL PRIMARY KEY,
+		telegramUsernameOwner VARCHAR,
+		telegramUserOwnerID BIGINT NOT NULL,
+		seriesTitle VARCHAR NOT NULL,
+		seriesGenre VARCHAR,
+		telegramUserBoundedID BIGINT,
+		FOREIGN KEY (telegramUserOwnerID) REFERENCES users (telegramUserID) ON DELETE CASCADE
+	);
 `
 
 var addMovieQuery = `
 INSERT INTO movies (telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
 VALUES ($1, $2, $3, $4, $5)
 `
+
+var addUserQuery = `
+	INSERT INTO users (telegramUserID, telegramUsername) VALUES ($1, $2)
+`
+
+var isUserExists = `
+	SELECT COUNT(*) FROM users WHERE telegramUserID = $1
+`
+
 var getMoviesQuery = `
 SELECT movieTitle, movieGenre
 FROM movies 
