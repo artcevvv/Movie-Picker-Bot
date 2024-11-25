@@ -43,6 +43,14 @@ var isUserExists = `
 	SELECT COUNT(*) FROM users WHERE telegramUserID = $1
 `
 
+var adminQuery = `
+	SELECT isadmin FROM users WHERE telegramUserID = $1
+`
+
+var userIDsSelect = `
+	SELECT telegramUserID FROM users;
+`
+
 var getMoviesQuery = `
 SELECT movieTitle, movieGenre
 FROM movies 

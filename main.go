@@ -39,6 +39,7 @@ func main() {
 	defer botHandler.Stop()
 	defer bot.StopLongPolling()
 
+	// commands
 	botHandler.Handle(startCommand, th.CommandEqual("start"))
 	botHandler.Handle(helpCommand, th.CommandEqual("help"))
 	botHandler.Handle(stopCommand, th.CommandEqual("stop"))
@@ -48,11 +49,15 @@ func main() {
 	botHandler.Handle(randomCommand, th.CommandEqual("randmovie"))
 	botHandler.Handle(getRandMovieByGenreHandler, th.CommandEqual("randbygenre"))
 	botHandler.Handle(todoCommand, th.CommandEqual("devtodo"))
+	botHandler.Handle(sendGlobalAnnouncement, th.CommandEqual("announcement"))
+
+	// CQ
 	botHandler.HandleCallbackQuery(handleDeleteCallback, th.CallbackDataPrefix("delete:"))
 	botHandler.HandleCallbackQuery(handleGenreSelect, th.CallbackDataPrefix("genre:"))
 	botHandler.HandleCallbackQuery(handlePaginationCQ, th.CallbackDataPrefix("page:"))
 	botHandler.HandleCallbackQuery(cqRandByGenre, th.CallbackDataPrefix("randbygenre:"))
 
+	// etc
 	botHandler.Handle(anyText, th.AnyCommand())
 	botHandler.Handle(handleUserInput)
 

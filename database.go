@@ -80,6 +80,20 @@ func addUser(telegramUserID int64, telegramUsername string) error {
 	return nil
 }
 
+func checkIfAdmin(telegramUserID int64) (bool, error) {
+	var isAdmin bool
+	err := db.QueryRow(adminQuery, telegramUserID).Scan(&isAdmin)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, fmt.Errorf("user not found")
+		}
+		return false, fmt.Errorf("failed to check admin status: %v", err)
+	}
+
+	return isAdmin, nil
+}
+
 func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, movieTitle, movieGenre string, telegramUserBoundedID *int64) error {
 	if movieTitle == "" {
 		return fmt.Errorf("movie title cannot be empty")
@@ -93,6 +107,30 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 
 	fmt.Println("Movie added successfully")
 	return nil
+}
+
+func getChatIDs() ([]int64, error) {
+	rows, err := db.Query(userIDsSelect)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chatids: %v", err)
+	}
+
+	defer rows.Close()
+
+	var ChatIDs []int64
+
+	for rows.Next() {
+		var ChatID int64
+
+		if err := rows.Scan(&ChatID); err != nil {
+			return nil, fmt.Errorf("failed to parse chatid: %v", err)
+		}
+
+		ChatIDs = append(ChatIDs, ChatID)
+	}
+
+	return ChatIDs, nil
 }
 
 func getMoviesHandler(telegramUsenameOwner string) ([]map[string]string, error) {
