@@ -57,10 +57,22 @@ var userIDsSelect = `
 	SELECT telegramUserID FROM users;
 `
 
+var deleteSeriesQuery = `
+	DELETE FROM series
+	WHERE telegramUserID ILIKE $1
+	AND seriesTitle ILIKE $2
+`
+
 var getMoviesQuery = `
 SELECT movieTitle, movieGenre
 FROM movies 
 WHERE telegramUsenameOwner = $1 
+`
+
+var getSeriesQuery = `
+	SELECT seriesTitle, seriesEpisodes, seriesGenre
+	FROM series
+	WHERE telegramUserOwnerID = $1
 `
 
 var getByGenreQuery = `

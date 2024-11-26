@@ -53,6 +53,8 @@ func main() {
 
 	// series commands
 	botHandler.Handle(addSeries, th.CommandEqual("addseries"))
+	botHandler.Handle(getSeries, th.CommandEqual("getseries"))
+	botHandler.Handle(deleteSeries, th.CommandEqual("deleteseries"))
 
 	// dev & admin commands
 	botHandler.Handle(todoCommand, th.CommandEqual("devtodo"))
@@ -65,6 +67,7 @@ func main() {
 	botHandler.HandleCallbackQuery(handleSeriesPaginationCQ, th.CallbackDataPrefix("seriesPage:"))
 	botHandler.HandleCallbackQuery(handlePaginationCQ, th.CallbackDataPrefix("page:"))
 	botHandler.HandleCallbackQuery(cqRandByGenre, th.CallbackDataPrefix("randbygenre:"))
+	botHandler.HandleCallbackQuery(handleSeriesDeleteCQ, th.CallbackDataPrefix("deleteseries:"))
 
 	// etc
 	botHandler.Handle(anyText, th.AnyCommand())

@@ -40,6 +40,31 @@ func handleDeleteCallback(bot *telego.Bot, cq telego.CallbackQuery) {
 	})
 }
 
+func handleSeriesDeleteCQ(bot *telego.Bot, cq telego.CallbackQuery) {
+	chatID := cq.Message.GetChat().ID
+
+	data := cq.Data
+	if len(data) > 13 && data[:13] == "deleteseries:" {
+		seriesTitle := data[13:]
+
+		message, err := rmSeries(chatID, seriesTitle)
+		if err != nil {
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("Failed to remove series: %v", err)))
+			return
+		}
+
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), message))
+	} else {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Invalid callback data."))
+	}
+
+	_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+		CallbackQueryID: cq.ID,
+		Text:            "Processing your request...",
+		ShowAlert:       false,
+	})
+}
+
 func handleGenreSelect(bot *telego.Bot, cq telego.CallbackQuery) {
 	chatID := cq.Message.GetChat().ID
 	username := cq.Message.GetChat().Username

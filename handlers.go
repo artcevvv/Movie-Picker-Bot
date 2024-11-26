@@ -222,3 +222,49 @@ func addSeries(bot *telego.Bot, update telego.Update) {
 		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "✒️ Enter the series title:"))
 	}
 }
+
+func getSeries(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+	listSeries, err := getSeriesHandler(chatID)
+
+	if err != nil {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("You have no series saved!\n\nTo add new series use /addseries command:\n\n %v", err)))
+	}
+
+	var msg string
+
+	for _, series := range listSeries {
+		if series["genre"] == "" {
+			msg += fmt.Sprintf("🎬 Title: %s Number of episodes: %s\n", series["title"], series["episodes"])
+		} else {
+			msg += fmt.Sprintf("🎬 Title: %s Number of episodes: %s Genre: %s\n", series["title"], series["episodes"], series["genre"])
+		}
+	}
+
+	if msg == "" {
+		msg = "No series found for this user!"
+	}
+
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "📜 Here are the series you've added:\n\n"+msg))
+}
+
+func deleteSeries(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+
+	listSeries, err := getSeriesHandler(chatID)
+
+	if err != nil {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("❌ Failed to fetch series: %v", err)))
+		return
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, series := range listSeries {
+		title := series["title"]
+
+		button := tu.InlineKeyboardButton(title).WithCallbackData(fmt.Sprintf("deleteseries:%s", title))
+		rows = append(rows, []telego.InlineKeyboardButton{button})
+	}
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🗑️ Select which movie to delete:").WithReplyMarkup(&telego.InlineKeyboardMarkup{InlineKeyboard: rows}))
+}

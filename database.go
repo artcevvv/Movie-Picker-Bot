@@ -124,6 +124,37 @@ func addSeriesHandler(telegramUsername string, telegramUserID int64, seriesTitle
 	return nil
 }
 
+func getSeriesHandler(telegramUserID int64) ([]map[string]string, error) {
+	rows, err := db.Query(getSeriesQuery, telegramUserID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch movies: %v", err)
+	}
+
+	defer rows.Close()
+
+	var manySeries []map[string]string
+
+	for rows.Next() {
+		var seriesTitle, seriesEpisodes, seriesGenre string
+		err := rows.Scan(&seriesTitle, &seriesEpisodes, &seriesGenre)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse series: %v", err)
+		}
+
+		series := map[string]string{
+			"title":    seriesTitle,
+			"episodes": seriesEpisodes,
+			"genre":    seriesGenre,
+		}
+
+		manySeries = append(manySeries, series)
+	}
+
+	return manySeries, nil
+}
+
 func getChatIDs() ([]int64, error) {
 	rows, err := db.Query(userIDsSelect)
 
@@ -227,4 +258,24 @@ func rmMovie(telegramUsenameOwner, movieTitle string) (string, error) {
 	}
 
 	return fmt.Sprintf("Movie '%s' removed successfully.", movieTitle), nil
+}
+
+func rmSeries(telegramUserID int64, seriesTitle string) (string, error) {
+	result, err := db.Exec(deleteSeriesQuery, telegramUserID, seriesTitle)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to remove movie: %v", err)
+	}
+
+	ra, err := result.RowsAffected()
+
+	if err != nil {
+		return "", fmt.Errorf("couldn't determine affected rows: %v", err)
+	}
+
+	if ra == 0 {
+		return "No series found for this user", nil
+	}
+
+	return fmt.Sprintf("Series '%s' removed successfully.", seriesTitle), nil
 }
