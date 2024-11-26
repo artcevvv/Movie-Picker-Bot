@@ -24,6 +24,7 @@ var queryForSeries = `
 		telegramUsernameOwner VARCHAR,
 		telegramUserOwnerID BIGINT NOT NULL,
 		seriesTitle VARCHAR NOT NULL,
+		seriesEpisodes VARCHAR NOT NULL,
 		seriesGenre VARCHAR,
 		telegramUserBoundedID BIGINT,
 		FOREIGN KEY (telegramUserOwnerID) REFERENCES users (telegramUserID) ON DELETE CASCADE
@@ -31,8 +32,13 @@ var queryForSeries = `
 `
 
 var addMovieQuery = `
-INSERT INTO movies (telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
-VALUES ($1, $2, $3, $4, $5)
+	INSERT INTO movies (telegramUsenameOwner, telegramUserOwnerID, movieTitle, movieGenre, telegramUserBoundedID)
+	VALUES ($1, $2, $3, $4, $5)
+`
+
+var addSeriesQuery = `
+	INSERT INTO series (telegramusernameowner, telegramuserownerid, seriestitle, seriesepisodes, seriesgenre)
+	VALUES ($1, $2, $3, $4, $5) 
 `
 
 var addUserQuery = `

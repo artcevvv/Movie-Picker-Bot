@@ -43,22 +43,33 @@ func main() {
 	botHandler.Handle(startCommand, th.CommandEqual("start"))
 	botHandler.Handle(helpCommand, th.CommandEqual("help"))
 	botHandler.Handle(stopCommand, th.CommandEqual("stop"))
+
+	// movie commands
 	botHandler.Handle(addMovie, th.CommandEqual("addmovie"))
 	botHandler.Handle(getMovies, th.CommandEqual("getmovies"))
 	botHandler.Handle(deleteMovieList, th.CommandEqual("deletemovie"))
 	botHandler.Handle(randomCommand, th.CommandEqual("randmovie"))
 	botHandler.Handle(getRandMovieByGenreHandler, th.CommandEqual("randbygenre"))
+
+	// series commands
+	botHandler.Handle(addSeries, th.CommandEqual("addseries"))
+
+	// dev & admin commands
 	botHandler.Handle(todoCommand, th.CommandEqual("devtodo"))
 	botHandler.Handle(sendGlobalAnnouncement, th.CommandEqual("announcement"))
 
 	// CQ
 	botHandler.HandleCallbackQuery(handleDeleteCallback, th.CallbackDataPrefix("delete:"))
 	botHandler.HandleCallbackQuery(handleGenreSelect, th.CallbackDataPrefix("genre:"))
+	botHandler.HandleCallbackQuery(handleSeriesGenreSelect, th.CallbackDataPrefix("seriesGenre:"))
+	botHandler.HandleCallbackQuery(handleSeriesPaginationCQ, th.CallbackDataPrefix("seriesPage:"))
 	botHandler.HandleCallbackQuery(handlePaginationCQ, th.CallbackDataPrefix("page:"))
 	botHandler.HandleCallbackQuery(cqRandByGenre, th.CallbackDataPrefix("randbygenre:"))
 
 	// etc
 	botHandler.Handle(anyText, th.AnyCommand())
+	botHandler.Handle(handleUserSeriesAddition)
+	botHandler.Handle(handleGlobalAnnouncementMsg)
 	botHandler.Handle(handleUserInput)
 
 	botHandler.Start()

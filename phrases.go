@@ -12,4 +12,4 @@ var unknownCommand = "❓ Unknown command!\n\n📖 Use /start or /help to learn 
 
 var noUsername = "❌ You need a Telegram username to use this feature. Please set your username in Telegram settings."
 
-var globalAnnouncement = "test"
+var globalAnnouncement string

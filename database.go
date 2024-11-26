@@ -109,6 +109,21 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 	return nil
 }
 
+func addSeriesHandler(telegramUsername string, telegramUserID int64, seriesTitle, seriesEpisodes, seriesGenres string) error {
+	if seriesTitle == "" {
+		return fmt.Errorf("series title cannot be empty")
+	}
+
+	_, err := db.Exec(addSeriesQuery, telegramUsername, telegramUserID, seriesTitle, seriesEpisodes, seriesGenres)
+
+	if err != nil {
+		return fmt.Errorf("failed to add series: %v", err)
+	}
+
+	fmt.Println("Series added successfully")
+	return nil
+}
+
 func getChatIDs() ([]int64, error) {
 	rows, err := db.Query(userIDsSelect)
 

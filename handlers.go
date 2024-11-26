@@ -207,3 +207,18 @@ func deleteMovieList(bot *telego.Bot, update telego.Update) {
 
 	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🗑️ Select which movie to delete:").WithReplyMarkup(&telego.InlineKeyboardMarkup{InlineKeyboard: rows}))
 }
+
+func addSeries(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+	username := update.Message.From.Username
+	if username == "" {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), noUsername))
+		return
+	}
+
+	if _, exists := userStates[chatID]; !exists {
+		userStates[chatID] = stateWaitingForSeriesTitle
+		userInputs[chatID] = make(map[string]string)
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "✒️ Enter the series title:"))
+	}
+}

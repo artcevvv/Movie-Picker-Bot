@@ -73,6 +73,40 @@ func handleGenreSelect(bot *telego.Bot, cq telego.CallbackQuery) {
 	delete(userInputs, chatID)
 }
 
+func handleSeriesGenreSelect(bot *telego.Bot, cq telego.CallbackQuery) {
+	chatID := cq.Message.GetChat().ID
+	username := cq.Message.GetChat().Username
+
+	// if cq.Data == "" || len(cq.Data) < 13 || cq.Data[:12] != "seriesGenre:" {
+	// 	_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+	// 		CallbackQueryID: cq.ID,
+	// 		Text:            "Invalid series genre selection.",
+	// 	})
+	// 	return
+	// }
+
+	selectedGenre := cq.Data[12:]
+
+	_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+		CallbackQueryID: cq.ID,
+		Text:            "Genre selected: " + selectedGenre,
+	})
+
+	saveUserInput(chatID, "seriesGenre", selectedGenre)
+
+	err := processSeriesInput(username, chatID)
+
+	if err != nil {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("Failed to add series: %v", err)))
+	} else {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Series added successfully!"))
+
+	}
+
+	delete(userStates, chatID)
+	delete(userInputs, chatID)
+}
+
 func cqRandByGenre(bot *telego.Bot, cq telego.CallbackQuery) {
 	chatID := cq.Message.GetChat().ID
 	username := cq.From.Username
@@ -136,5 +170,27 @@ func handlePaginationCQ(bot *telego.Bot, cq telego.CallbackQuery) {
 		})
 
 		editGenreSelection(bot, chatID, messageID, page)
+	}
+}
+
+func handleSeriesPaginationCQ(bot *telego.Bot, cq telego.CallbackQuery) {
+	chatID := cq.Message.GetChat().ID
+	messageID := cq.Message.GetMessageID()
+
+	if len(cq.Data) > 11 && cq.Data[:11] == "seriesPage:" {
+		page, err := strconv.Atoi(cq.Data[11:])
+		if err != nil {
+			_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+				CallbackQueryID: cq.ID,
+				Text:            "Invalid page number",
+			})
+			return
+		}
+
+		_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+			CallbackQueryID: cq.ID,
+		})
+
+		editSeriesGenreSelection(bot, chatID, messageID, page)
 	}
 }

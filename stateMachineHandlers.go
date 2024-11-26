@@ -16,14 +16,31 @@ import (
 var userStates = make(map[int64]string)
 var userInputs = make(map[int64]map[string]string)
 
-// constants for states
+// constants for states for movies
 
 const (
-	stateWaitingForTitle            = "waiting_for_title"
-	stateWaitingForGenre            = "waiting_for_genre"
-	stateWaitingForBoundUsername    = "waiting_for_bound"
-	stateWaitingForPartnerAgreement = "waiting_for_partner_agreement"
+	stateWaitingForTitle = "waiting_for_title"
+	stateWaitingForGenre = "waiting_for_genre"
 )
+
+// constants for states for series
+
+const (
+	stateWaitingForSeriesTitle = "waiting_for_title"
+	stateWaitingForSeriesGenre = "waiting_for_genre"
+	stateWaitingForEpisodes    = "waiting_for_episodes"
+)
+
+// constants for states for user boundaries
+
+// const (
+// 	stateWaitingForBoundUsername    = "waiting_for_bound"
+// 	stateWaitingForPartnerAgreement = "waiting_for_partner_agreement"
+// )
+
+// constants for states for admin actions
+
+const stateWaitingForAnnounceMsg = "waiting_for_announcement"
 
 func handleUserInput(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
@@ -43,17 +60,132 @@ func handleUserInput(bot *telego.Bot, update telego.Update) {
 	}
 }
 
-// func handleUserInputForBound(bot *telego.Bot, update telego.Update) {
-// 	chatID := update.Message.Chat.ID
+func handleUserSeriesAddition(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
 
-// 	if state, exists := userStates[chatID]; exists && state == stateWaitingForBoundUsername {
-// 		switch state {
-// 		case stateWaitingForBoundUsername:
-// 			saveUserInput(chatID, "boundUsername", update.Message.Text)
+	if state, exists := userStates[chatID]; exists {
+		switch state {
+		case stateWaitingForSeriesTitle:
+			saveUserInput(chatID, "seriesTitle", update.Message.Text)
+			userStates[chatID] = stateWaitingForEpisodes
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Enter number of episodes in series: "))
+		case stateWaitingForEpisodes:
+			saveUserInput(chatID, "seriesEpisodes", update.Message.Text)
+			userStates[chatID] = stateWaitingForSeriesGenre
+			sendInitialSeriesGenreSelection(bot, chatID)
+		case stateWaitingForSeriesGenre:
+			// momma raised no bitch
+		default:
+			delete(userStates, chatID)
+			delete(userInputs, chatID)
+		}
+	}
+}
 
-// 		}
-// 	}
-// }
+func sendInitialSeriesGenreSelection(bot *telego.Bot, chatID int64) (int, error) {
+	genresPerPage := 6
+
+	start, end := 0, genresPerPage
+
+	if end > len(seriesGenres) {
+		end = len(genres)
+	}
+
+	currentPageGenres := seriesGenres[start:end]
+
+	var buttons [][]telego.InlineKeyboardButton
+	var row []telego.InlineKeyboardButton
+
+	for i, genre := range currentPageGenres {
+		row = append(row, tu.InlineKeyboardButton(genre).WithCallbackData("seriesGenre:"+genre))
+
+		if len(row) == 2 || i == len(currentPageGenres)-1 {
+			buttons = append(buttons, row)
+			row = nil
+		}
+	}
+
+	var navRow []telego.InlineKeyboardButton
+
+	if end < len(seriesGenres) {
+		navRow = append(navRow, tu.InlineKeyboardButton("➡️ Next").WithCallbackData(fmt.Sprintf("seriesPage:%d", 1)))
+	}
+
+	buttons = append(buttons, tu.InlineKeyboardRow(tu.InlineKeyboardButton("Skip").WithCallbackData("seriesGenre:skip")))
+
+	buttons = append(buttons, navRow)
+
+	msg, err := bot.SendMessage(tu.Message(tu.ID(chatID), "Page 1:\n\nSelect a genre:").
+		WithReplyMarkup(&telego.InlineKeyboardMarkup{InlineKeyboard: buttons}),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return msg.MessageID, nil
+}
+
+func editSeriesGenreSelection(bot *telego.Bot, chatID int64, messageID, page int) {
+	genresPerPage := 6
+
+	start := page * genresPerPage
+	end := start + genresPerPage
+
+	if end > len(seriesGenres) {
+		end = len(seriesGenres)
+	}
+
+	currentPageGenres := seriesGenres[start:end]
+
+	var buttons [][]telego.InlineKeyboardButton
+	var row []telego.InlineKeyboardButton
+
+	for i, genre := range currentPageGenres {
+		row = append(row, tu.InlineKeyboardButton(genre).WithCallbackData("seriesGenre:"+genre))
+
+		if len(row) == 2 || i == len(currentPageGenres)-1 {
+			buttons = append(buttons, row)
+			row = nil
+		}
+	}
+
+	var navRow []telego.InlineKeyboardButton
+
+	if page > 0 {
+		navRow = append(navRow, tu.InlineKeyboardButton("⬅️ Previous").WithCallbackData(fmt.Sprintf("seriesPage:%d", page-1)))
+	}
+
+	if end < len(seriesGenres) {
+		navRow = append(navRow, tu.InlineKeyboardButton("➡️ Next").WithCallbackData(fmt.Sprintf("seriesPage:%d", 1)))
+	}
+
+	buttons = append(buttons, tu.InlineKeyboardRow(tu.InlineKeyboardButton("Skip").WithCallbackData("seriesGenre:skip")))
+
+	buttons = append(buttons, navRow)
+
+	_, _ = bot.EditMessageText(&telego.EditMessageTextParams{
+		ChatID:    tu.ID(chatID),
+		MessageID: messageID,
+		Text:      fmt.Sprintf("Page %d:\n\nSelect a genre:", page+1),
+		ReplyMarkup: &telego.InlineKeyboardMarkup{
+			InlineKeyboard: buttons,
+		},
+	})
+}
+
+func processSeriesInput(username string, chatID int64) error {
+	input := userInputs[chatID]
+
+	telegramUsername := username
+	telegramUserID := chatID
+
+	seriesTitle := input["seriesTitle"]
+	seriesEpisodes := input["seriesEpisodes"]
+	seriesGenre := input["seriesGenre"]
+
+	return addSeriesHandler(telegramUsername, telegramUserID, seriesTitle, seriesEpisodes, seriesGenre)
+}
 
 func processMovieInput(username string, chatID int64) error {
 	input := userInputs[chatID]
