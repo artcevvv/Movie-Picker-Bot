@@ -40,7 +40,7 @@ const (
 
 // constants for states for admin actions
 
-const stateWaitingForAnnounceMsg = "waiting_for_announcement"
+// const stateWaitingForAnnounceMsg = "waiting_for_announcement"
 
 func handleUserInput(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID

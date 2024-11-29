@@ -68,7 +68,7 @@ func addUser(telegramUserID int64, telegramUsername string) error {
 	}
 
 	if count == 0 {
-		_, err := db.Exec(addUserQuery, telegramUserID, telegramUsername)
+		_, err := db.Exec(addUserQuery, telegramUserID, telegramUsername, false)
 
 		if err != nil {
 			return fmt.Errorf("error when adding user: %v", err)

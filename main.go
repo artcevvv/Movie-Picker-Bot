@@ -72,7 +72,6 @@ func main() {
 	// etc
 	botHandler.Handle(anyText, th.AnyCommand())
 	botHandler.Handle(handleUserSeriesAddition)
-	botHandler.Handle(handleGlobalAnnouncementMsg)
 	botHandler.Handle(handleUserInput)
 
 	botHandler.Start()

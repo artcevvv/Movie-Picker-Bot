@@ -8,9 +8,15 @@ import (
 )
 
 func sendGlobalAnnouncement(bot *telego.Bot, update telego.Update) {
-	chatID := update.Message.Chat.ID
+	liveChatID := update.Message.Chat.ID
+	ChatIDs, err := getChatIDs()
 
-	isAdmin, err := checkIfAdmin(chatID)
+	if err != nil {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(liveChatID), fmt.Sprintf("An error occured while sending global message: %v", err)))
+		return
+	}
+
+	isAdmin, err := checkIfAdmin(liveChatID)
 	if err != nil {
 		fmt.Printf("Something went wrong: %v", err)
 	}
@@ -21,34 +27,10 @@ func sendGlobalAnnouncement(bot *telego.Bot, update telego.Update) {
 			fmt.Printf("Failed to get unique chatid's: %v", err)
 		}
 
-		if _, exists := userStates[chatID]; !exists {
-			userStates[chatID] = stateWaitingForAnnounceMsg
-			userInputs[chatID] = make(map[string]string)
-			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "✒️ Write a message for global announcement:"))
+		for _, chatID := range ChatIDs {
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), globalAnnouncement))
 		}
 	} else {
-		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "You are not admin of the bot!"))
+		_, _ = bot.SendMessage(tu.Message(tu.ID(liveChatID), "You are not admin of the bot!"))
 	}
-}
-
-func handleGlobalAnnouncementMsg(bot *telego.Bot, update telego.Update) {
-	chatID := update.Message.Chat.ID
-
-	// Проверяем состояние пользователя
-	if state, exists := userStates[chatID]; exists {
-		switch state {
-		case stateWaitingForAnnounceMsg:
-			saveUserInput(chatID, "announceMessage", update.Message.Text)
-			sendGlobalAnnouncementMsg(bot, chatID)
-		default:
-			// Если состояние не соответствует ожиданиям, очищаем данные
-			delete(userStates, chatID)
-			delete(userInputs, chatID)
-		}
-	}
-}
-
-func sendGlobalAnnouncementMsg(bot *telego.Bot, chatID int64) {
-	globalAnnouncement = userInputs[chatID]["announceMessage"]
-	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), globalAnnouncement))
 }

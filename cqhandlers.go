@@ -102,14 +102,6 @@ func handleSeriesGenreSelect(bot *telego.Bot, cq telego.CallbackQuery) {
 	chatID := cq.Message.GetChat().ID
 	username := cq.Message.GetChat().Username
 
-	// if cq.Data == "" || len(cq.Data) < 13 || cq.Data[:12] != "seriesGenre:" {
-	// 	_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
-	// 		CallbackQueryID: cq.ID,
-	// 		Text:            "Invalid series genre selection.",
-	// 	})
-	// 	return
-	// }
-
 	selectedGenre := cq.Data[12:]
 
 	_ = bot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{

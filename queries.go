@@ -42,7 +42,7 @@ var addSeriesQuery = `
 `
 
 var addUserQuery = `
-	INSERT INTO users (telegramUserID, telegramUsername) VALUES ($1, $2)
+	INSERT INTO users (telegramUserID, telegramUsername, isadmin) VALUES ($1, $2, $3)
 `
 
 var isUserExists = `
@@ -59,8 +59,8 @@ var userIDsSelect = `
 
 var deleteSeriesQuery = `
 	DELETE FROM series
-	WHERE telegramUserID ILIKE $1
-	AND seriesTitle ILIKE $2
+	WHERE telegramUserOwnerID = $1
+	AND seriesTitle = $2
 `
 
 var getMoviesQuery = `
