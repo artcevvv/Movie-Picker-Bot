@@ -28,7 +28,7 @@ func sendGlobalAnnouncement(bot *telego.Bot, update telego.Update) {
 		}
 
 		for _, chatID := range ChatIDs {
-			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), globalAnnouncement))
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), globalAnnouncement).WithParseMode("HTML"))
 		}
 	} else {
 		_, _ = bot.SendMessage(tu.Message(tu.ID(liveChatID), "You are not admin of the bot!"))

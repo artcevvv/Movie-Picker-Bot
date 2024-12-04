@@ -55,6 +55,7 @@ func main() {
 	botHandler.Handle(addSeries, th.CommandEqual("addseries"))
 	botHandler.Handle(getSeries, th.CommandEqual("getseries"))
 	botHandler.Handle(deleteSeries, th.CommandEqual("deleteseries"))
+	botHandler.Handle(randomSeries, th.CommandEqual("randseries"))
 
 	// dev & admin commands
 	botHandler.Handle(todoCommand, th.CommandEqual("devtodo"))
@@ -71,7 +72,6 @@ func main() {
 
 	// etc
 	botHandler.Handle(anyText, th.AnyCommand())
-	botHandler.Handle(handleUserSeriesAddition)
 	botHandler.Handle(handleUserInput)
 
 	botHandler.Start()

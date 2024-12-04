@@ -136,6 +136,27 @@ func randomCommand(bot *telego.Bot, update telego.Update) {
 	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🎰 Here is a random movie from your list:\n\n<b>🎬 Title:</b> "+randomMovie["title"]+"\n<b>🎭 Genre:</b> "+randomMovie["genre"]).WithParseMode("HTML"))
 }
 
+func randomSeries(bot *telego.Bot, update telego.Update) {
+	chatID := update.Message.Chat.ID
+
+	seriesList, err := getSeriesHandler(chatID)
+
+	if err != nil {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("⚠️ Something went wrong! Error: %v", err)))
+		return
+	}
+
+	if len(seriesList) == 0 {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "You have no series in your list! 😢 \n🎥 Add some with /addseries to get started!"))
+		return
+	}
+
+	randomIndex := rand.Intn(len(seriesList))
+	randSeries := seriesList[randomIndex]
+
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🎰 Here is a random movie from your list:\n\n<b>🎬 Title:</b> "+randSeries["title"]+"\n<b>🎭 Amount of seasons:</b> "+randSeries["seasons"]+"\n<b>🎭 Amount of episodes in season:</b> "+randSeries["episodes"]+"\n<b>🎭 Genre:</b> "+randSeries["genre"]).WithParseMode("HTML"))
+}
+
 func addMovie(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 	if update.Message.From.Username == "" {
@@ -235,9 +256,9 @@ func getSeries(bot *telego.Bot, update telego.Update) {
 
 	for _, series := range listSeries {
 		if series["genre"] == "" {
-			msg += fmt.Sprintf("🎬 Title: %s Number of episodes: %s\n", series["title"], series["episodes"])
+			msg += fmt.Sprintf("🎬 Title: %s | Number of seasons: %s | Number of episodes in season: %s\n", series["title"], series["seasons"], series["episodes"])
 		} else {
-			msg += fmt.Sprintf("🎬 Title: %s Number of episodes: %s Genre: %s\n", series["title"], series["episodes"], series["genre"])
+			msg += fmt.Sprintf("🎬 Title: %s | Number of seasons: %s | Number of episodes in season: %s | Genre: %s\n", series["title"], series["seasons"], series["episodes"], series["genre"])
 		}
 	}
 
@@ -258,6 +279,11 @@ func deleteSeries(bot *telego.Bot, update telego.Update) {
 		return
 	}
 
+	if len(listSeries) == 0 {
+		_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "You have no series in your list! 😢 \n🎥 Add some with /addseries to get started!"))
+		return
+	}
+
 	var rows [][]telego.InlineKeyboardButton
 
 	for _, series := range listSeries {
@@ -266,5 +292,5 @@ func deleteSeries(bot *telego.Bot, update telego.Update) {
 		button := tu.InlineKeyboardButton(title).WithCallbackData(fmt.Sprintf("deleteseries:%s", title))
 		rows = append(rows, []telego.InlineKeyboardButton{button})
 	}
-	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🗑️ Select which movie to delete:").WithReplyMarkup(&telego.InlineKeyboardMarkup{InlineKeyboard: rows}))
+	_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "🗑️ Select which series to delete:").WithReplyMarkup(&telego.InlineKeyboardMarkup{InlineKeyboard: rows}))
 }

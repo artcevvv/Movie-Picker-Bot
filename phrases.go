@@ -12,4 +12,4 @@ var unknownCommand = "❓ Unknown command!\n\n📖 Use /start or /help to learn 
 
 var noUsername = "❌ You need a Telegram username to use this feature. Please set your username in Telegram settings."
 
-var globalAnnouncement = "I am excited to present you the new functionality of the bot: <b>series!</b>\n\nNow you can do:\n/addseries - Adding the series to your list;\n /getseries - shows the series you've already added to the list;\n/randseries - shows you random series from your list;\n/randseriesbygenre - shows you random series, filtered by the specific genre;\n/deleteseries - deleting series you've added."
+var globalAnnouncement = "I am excited to present you the new functionality of the bot: <b>series!</b>\n\nNow you can:\n/addseries - Adding the series to your list;\n /getseries - shows the series you've already added to the list;\n/randseries - shows you random series from your list;\n/deleteseries - deleting series you've added.\n\nHope you like this feature!"

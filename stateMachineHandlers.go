@@ -10,9 +10,6 @@ import (
 
 // map for storing userState and userInputs
 
-// ["qwer", "Qwer", "qwer"]
-// {"Key": "Value"}
-
 var userStates = make(map[int64]string)
 var userInputs = make(map[int64]map[string]string)
 
@@ -26,8 +23,9 @@ const (
 // constants for states for series
 
 const (
-	stateWaitingForSeriesTitle = "waiting_for_title"
-	stateWaitingForSeriesGenre = "waiting_for_genre"
+	stateWaitingForSeriesTitle = "waiting_for_series_title"
+	stateWaitingForSeriesGenre = "waiting_for_series_genre"
+	stateWaitingForSeasons     = "waiting_for_series_seasons"
 	stateWaitingForEpisodes    = "waiting_for_episodes"
 )
 
@@ -42,6 +40,8 @@ const (
 
 // const stateWaitingForAnnounceMsg = "waiting_for_announcement"
 
+// ALL STATES/USER INPUTS WRITE HERE! THIS SHIT IS GLOBAL, AND IF YOU CREATE NEW FUNCTION, YOU ARE RISKING TO MEET BUGS
+
 func handleUserInput(bot *telego.Bot, update telego.Update) {
 	chatID := update.Message.Chat.ID
 
@@ -53,22 +53,14 @@ func handleUserInput(bot *telego.Bot, update telego.Update) {
 			sendInitialGenreSelection(bot, chatID)
 		case stateWaitingForGenre:
 			// momma raised no bitch
-		default:
-			delete(userStates, chatID)
-			delete(userInputs, chatID)
-		}
-	}
-}
-
-func handleUserSeriesAddition(bot *telego.Bot, update telego.Update) {
-	chatID := update.Message.Chat.ID
-
-	if state, exists := userStates[chatID]; exists {
-		switch state {
 		case stateWaitingForSeriesTitle:
 			saveUserInput(chatID, "seriesTitle", update.Message.Text)
+			userStates[chatID] = stateWaitingForSeasons
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Enter number of seasons in series: "))
+		case stateWaitingForSeasons:
+			saveUserInput(chatID, "seriesSeasons", update.Message.Text)
 			userStates[chatID] = stateWaitingForEpisodes
-			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Enter number of episodes in series: "))
+			_, _ = bot.SendMessage(tu.Message(tu.ID(chatID), "Enter number of episodes in season in series: "))
 		case stateWaitingForEpisodes:
 			saveUserInput(chatID, "seriesEpisodes", update.Message.Text)
 			userStates[chatID] = stateWaitingForSeriesGenre
@@ -181,10 +173,11 @@ func processSeriesInput(username string, chatID int64) error {
 	telegramUserID := chatID
 
 	seriesTitle := input["seriesTitle"]
+	seriesSeasons := input["seriesSeasons"]
 	seriesEpisodes := input["seriesEpisodes"]
 	seriesGenre := input["seriesGenre"]
 
-	return addSeriesHandler(telegramUsername, telegramUserID, seriesTitle, seriesEpisodes, seriesGenre)
+	return addSeriesHandler(telegramUsername, telegramUserID, seriesTitle, seriesSeasons, seriesEpisodes, seriesGenre)
 }
 
 func processMovieInput(username string, chatID int64) error {

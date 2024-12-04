@@ -109,12 +109,12 @@ func addMovieHandler(telegramUsenameOwner string, telegramUserOwnerID int64, mov
 	return nil
 }
 
-func addSeriesHandler(telegramUsername string, telegramUserID int64, seriesTitle, seriesEpisodes, seriesGenres string) error {
+func addSeriesHandler(telegramUsername string, telegramUserID int64, seriesTitle, seriesSeasons, seriesEpisodes, seriesGenres string) error {
 	if seriesTitle == "" {
 		return fmt.Errorf("series title cannot be empty")
 	}
 
-	_, err := db.Exec(addSeriesQuery, telegramUsername, telegramUserID, seriesTitle, seriesEpisodes, seriesGenres)
+	_, err := db.Exec(addSeriesQuery, telegramUsername, telegramUserID, seriesTitle, seriesSeasons, seriesEpisodes, seriesGenres)
 
 	if err != nil {
 		return fmt.Errorf("failed to add series: %v", err)
@@ -128,7 +128,7 @@ func getSeriesHandler(telegramUserID int64) ([]map[string]string, error) {
 	rows, err := db.Query(getSeriesQuery, telegramUserID)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch movies: %v", err)
+		return nil, fmt.Errorf("failed to fetch series: %v", err)
 	}
 
 	defer rows.Close()
@@ -136,8 +136,8 @@ func getSeriesHandler(telegramUserID int64) ([]map[string]string, error) {
 	var manySeries []map[string]string
 
 	for rows.Next() {
-		var seriesTitle, seriesEpisodes, seriesGenre string
-		err := rows.Scan(&seriesTitle, &seriesEpisodes, &seriesGenre)
+		var seriesTitle, seriesSeasons, seriesEpisodes, seriesGenre string
+		err := rows.Scan(&seriesTitle, &seriesSeasons, &seriesEpisodes, &seriesGenre)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse series: %v", err)
@@ -145,6 +145,7 @@ func getSeriesHandler(telegramUserID int64) ([]map[string]string, error) {
 
 		series := map[string]string{
 			"title":    seriesTitle,
+			"seasons":  seriesSeasons,
 			"episodes": seriesEpisodes,
 			"genre":    seriesGenre,
 		}

@@ -24,6 +24,7 @@ var queryForSeries = `
 		telegramUsernameOwner VARCHAR,
 		telegramUserOwnerID BIGINT NOT NULL,
 		seriesTitle VARCHAR NOT NULL,
+		seriesSeasons VARCHAR NOT NULL, 
 		seriesEpisodes VARCHAR NOT NULL,
 		seriesGenre VARCHAR,
 		telegramUserBoundedID BIGINT,
@@ -37,8 +38,8 @@ var addMovieQuery = `
 `
 
 var addSeriesQuery = `
-	INSERT INTO series (telegramusernameowner, telegramuserownerid, seriestitle, seriesepisodes, seriesgenre)
-	VALUES ($1, $2, $3, $4, $5) 
+	INSERT INTO series (telegramusernameowner, telegramuserownerid, seriestitle, seriesseasons,seriesepisodes, seriesgenre)
+	VALUES ($1, $2, $3, $4, $5, $6) 
 `
 
 var addUserQuery = `
@@ -70,7 +71,7 @@ WHERE telegramUsenameOwner = $1
 `
 
 var getSeriesQuery = `
-	SELECT seriesTitle, seriesEpisodes, seriesGenre
+	SELECT seriesTitle, seriesEpisodes, seriesseasons, seriesGenre
 	FROM series
 	WHERE telegramUserOwnerID = $1
 `
